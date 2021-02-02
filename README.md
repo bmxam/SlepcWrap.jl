@@ -1,2 +1,2 @@
-# JuliaSlepc.jl
+# SlepcWrap.jl
 Parallel Julia wrapper for SLEPc
