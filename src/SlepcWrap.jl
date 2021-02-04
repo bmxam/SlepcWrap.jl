@@ -12,14 +12,22 @@ module SlepcWrap
 
     include("eps.jl")
     export  SlepcEPS, CEPS,
+            create_eps,
+            get_eig, get_eigs,
+            get_eigenvalue, get_eigenvalues,
+            get_eigenpair,
+            get_tolerances,
+            neigs,
             EPSCreate,
             EPSDestroy,
             EPSGetConverged,
             EPSGetTolerances,
             EPSGetEigenpair,
             EPSGetEigenvalue,
+            EPSGetOperators,
             EPSSetFromOptions,
             EPSSetOperators,
             EPSSetUp,
-            EPSSolve
+            EPSSolve,
+            EPSView
 end

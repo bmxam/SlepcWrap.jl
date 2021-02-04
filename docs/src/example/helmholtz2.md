@@ -1,28 +1,5 @@
-# SlepcWrap.jl
 
-SlepcWrap.jl is a parallel Julia wrapper for the (awesome) [SLEPc](https://slepc.upv.es/) library. As described on their main page, "SLEPc is a software library for the solution of large scale sparse eigenvalue problems on parallel computers. It is an extension of PETSc and can be used for linear eigenvalue problems in either standard or generalized form, with real or complex arithmetic.".
-
-Note that as SLEPc is an extension of PETSc, SlepcWrap.jl is an extension of [PetscWrap.jl](https://github.com/bmxam/PetscWrap.jl).
-
-The project is far from covering all SLEPc methods, but adding a new wrapper is very quick and easy.
-## How to install it
-You must have installed the SLEPc library (and necessarily the PETSc library as wall) on your computer and set the two following environment variables : `SLEPC_DIR` and `PETSC_ARCH`.
-
-At run time, PetscWrap.jl looks for the `libslepc.so` using these environment variables and "load" the library.
-
-To install the package, use the Julia package manager:
-```Julia
-pkg> add SlepcWrap
-```
-## Contribute
-Any contribution(s) and/or remark(s) are welcome!
-
-## SLEPc compat.
-This version of PetscWrap.jl has been tested with slepc-3.13.1 Complex numbers are not supported yet.
-
-## How to use it
-You will find examples of use by building the documentation: `julia SlepcWrap.jl/docs/make.jl`. Here is one of the examples:
-### Helmholtz equation
+# Helmholtz equation with fancy method names
 In this example, we use the SLEPc to find the eigenvalues of the following Helmholtz equation:
 ``u'' + \omega^2 u = 0`` associated to Dirichlet boundary conditions on the domain ``[0,1]``. Hence
 the theoritical eigenvalues are ``\omega = k \pi`` with ``k \in \mathbb{Z}^*``; and the associated
@@ -33,7 +10,8 @@ The equation is written in matrix form ``Au = \alpha Bu`` where ``\alpha = \omeg
 
 To run this example, simplfy excute `mpirun -n your_favourite_integer julia helmholtz_FD.jl`
 
-In this example, PETSc/SLEPc legacy method names are used. For more fancy names, check the next example.
+In this example, "fancy" names are use to interface with PETSc/SLEPc. For legacy method names check the
+previous example.
 
 Note that the way we achieve things in the document can be highly improved and the purpose of this example
 is only demonstrate some method calls to give an overview.
@@ -67,21 +45,19 @@ Create the problem matrices, set sizes and apply "command-line" options. Note th
 set the number of preallocated non-zeros to increase performance.
 
 ```julia
-A = MatCreate()
-B = MatCreate()
-MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, n, n)
-MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, n, n)
-MatSetFromOptions(A)
-MatSetFromOptions(B)
-MatSetUp(A)
-MatSetUp(B)
+A = create_matrix(n, n)
+B = create_matrix(n, n)
+set_from_options!(A)
+set_from_options!(B)
+set_up!(A)
+set_up!(B)
 ```
 
 Get rows handled by the local processor
 
 ```julia
-A_rstart, A_rend = MatGetOwnershipRange(A)
-B_rstart, B_rend = MatGetOwnershipRange(B)
+A_rstart, A_rend = get_range(A)
+B_rstart, B_rend = get_range(B)
 ```
 
 Fill matrix A  with second order derivative central scheme
@@ -119,53 +95,50 @@ Set boundary conditions : u(0) = 0 and u(1) = 0. Only the processor handling the
 Assemble the matrices
 
 ```julia
-MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY)
-MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY)
-MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY)
-MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY)
+assemble!(A)
+assemble!(B)
 ```
 
 Now we set up the eigenvalue solver
 
 ```julia
-eps = EPSCreate()
-EPSSetOperators(eps, A, B)
-EPSSetFromOptions(eps)
-EPSSetUp(eps)
+eps = create_eps(A, B)
+set_from_options!(eps)
+set_up!(eps)
 ```
 
 Then we solve
 
 ```julia
-EPSSolve(eps)
+solve!(eps)
 ```
 
 And finally we can inspect the solution. Let's first get the number of converged eigenvalues:
 
 ```julia
-nconv = EPSGetConverged(eps)
+nconv = neigs(eps)
 ```
 
 Then we can get/display these eigenvalues (more precisely their square root, i.e ``\simeq \omega``)
 
 ```julia
 for ieig in 1:nconv
-    vpr, vpi = EPSGetEigenvalue(eps, ieig)
-    @show √(vpr), √(vpi)
+    eig = get_eig(eps, ieig)
+    @show √(real(eig))
 end
 ```
 
-We can also play with eigen vectors. First, create two Petsc vectors to allocate memory
+You can also get all the converged eigenvalues in one call
 
 ```julia
-vecr, veci = MatCreateVecs(A)
+eigs = get_eigenvalues(eps)
 ```
 
-Then loop over the eigen pairs and retrieve eigenvectors
+We can also play with eigen vectors.
 
 ```julia
 for ieig in 1:nconv
-    vpr, vpi, vecpr, vecpi = EPSGetEigenpair(eps, ieig, vecr, veci)
+    vpr, vpi, vecpr, vecpi = get_eigenpair(eps, ieig)
 
     # At this point, you can call VecGetArray to obtain a Julia array (see PetscWrap examples).
     # If you are on one processor, you can even plot the solution to check that you have a sinus
@@ -176,9 +149,9 @@ end
 Finally, let's free the memory
 
 ```julia
-MatDestroy(A)
-MatDestroy(B)
-EPSDestroy(eps)
+destroy!(A)
+destroy!(B)
+destroy!(eps)
 ```
 
 And call finalize when you're done
@@ -188,4 +161,7 @@ SlepcFinalize()
 
 ```
 
+---
+
+*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
 

@@ -10,7 +10,8 @@ module Helmholtz #hide
 #
 # To run this example, simplfy excute `mpirun -n your_favourite_integer julia helmholtz_FD.jl`
 #
-# In this example, PETSc/SLEPc legacy method names are used. For more fancy names, check the next example.
+# In this example, "fancy" names are use to interface with PETSc/SLEPc. For legacy method names check the
+# previous example.
 #
 # Note that the way we achieve things in the document can be highly improved and the purpose of this example
 # is only demonstrate some method calls to give an overview.
@@ -33,18 +34,16 @@ SlepcInitialize("-eps_target 0 -eps_nev 5 -st_pc_factor_shift_type NONZERO -st_t
 
 # Create the problem matrices, set sizes and apply "command-line" options. Note that we should
 # set the number of preallocated non-zeros to increase performance.
-A = MatCreate()
-B = MatCreate()
-MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, n, n)
-MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, n, n)
-MatSetFromOptions(A)
-MatSetFromOptions(B)
-MatSetUp(A)
-MatSetUp(B)
+A = create_matrix(n, n)
+B = create_matrix(n, n)
+set_from_options!(A)
+set_from_options!(B)
+set_up!(A)
+set_up!(B)
 
 # Get rows handled by the local processor
-A_rstart, A_rend = MatGetOwnershipRange(A)
-B_rstart, B_rend = MatGetOwnershipRange(B)
+A_rstart, A_rend = get_range(A)
+B_rstart, B_rend = get_range(B)
 
 # Fill matrix A  with second order derivative central scheme
 for i in A_rstart:A_rend
@@ -70,35 +69,33 @@ end
 (B_rend == n) && (B[n,     n] = 0.      )
 
 # Assemble the matrices
-MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY)
-MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY)
-MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY)
-MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY)
+assemble!(A)
+assemble!(B)
 
 # Now we set up the eigenvalue solver
-eps = EPSCreate()
-EPSSetOperators(eps, A, B)
-EPSSetFromOptions(eps)
-EPSSetUp(eps)
+eps = create_eps(A, B)
+set_from_options!(eps)
+set_up!(eps)
 
 # Then we solve
-EPSSolve(eps)
+solve!(eps)
 
 # And finally we can inspect the solution. Let's first get the number of converged eigenvalues:
-nconv = EPSGetConverged(eps)
+nconv = neigs(eps)
 
 # Then we can get/display these eigenvalues (more precisely their square root, i.e ``\simeq \omega``)
 for ieig in 1:nconv
-    vpr, vpi = EPSGetEigenvalue(eps, ieig)
-    @show √(vpr), √(vpi)
+    eig = get_eig(eps, ieig)
+    @show √(real(eig))
 end
 
-# We can also play with eigen vectors. First, create two Petsc vectors to allocate memory
-vecr, veci = MatCreateVecs(A)
+# You can also get all the converged eigenvalues in one call
+eigs = get_eigenvalues(eps)
 
-# Then loop over the eigen pairs and retrieve eigenvectors
+
+# We can also play with eigen vectors.
 for ieig in 1:nconv
-    vpr, vpi, vecpr, vecpi = EPSGetEigenpair(eps, ieig, vecr, veci)
+    vpr, vpi, vecpr, vecpi = get_eigenpair(eps, ieig)
 
     ## At this point, you can call VecGetArray to obtain a Julia array (see PetscWrap examples).
     ## If you are on one processor, you can even plot the solution to check that you have a sinus
@@ -106,9 +103,9 @@ for ieig in 1:nconv
 end
 
 # Finally, let's free the memory
-MatDestroy(A)
-MatDestroy(B)
-EPSDestroy(eps)
+destroy!(A)
+destroy!(B)
+destroy!(eps)
 
 # And call finalize when you're done
 SlepcFinalize()

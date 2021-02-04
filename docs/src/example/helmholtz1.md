@@ -1,28 +1,5 @@
-# SlepcWrap.jl
 
-SlepcWrap.jl is a parallel Julia wrapper for the (awesome) [SLEPc](https://slepc.upv.es/) library. As described on their main page, "SLEPc is a software library for the solution of large scale sparse eigenvalue problems on parallel computers. It is an extension of PETSc and can be used for linear eigenvalue problems in either standard or generalized form, with real or complex arithmetic.".
-
-Note that as SLEPc is an extension of PETSc, SlepcWrap.jl is an extension of [PetscWrap.jl](https://github.com/bmxam/PetscWrap.jl).
-
-The project is far from covering all SLEPc methods, but adding a new wrapper is very quick and easy.
-## How to install it
-You must have installed the SLEPc library (and necessarily the PETSc library as wall) on your computer and set the two following environment variables : `SLEPC_DIR` and `PETSC_ARCH`.
-
-At run time, PetscWrap.jl looks for the `libslepc.so` using these environment variables and "load" the library.
-
-To install the package, use the Julia package manager:
-```Julia
-pkg> add SlepcWrap
-```
-## Contribute
-Any contribution(s) and/or remark(s) are welcome!
-
-## SLEPc compat.
-This version of PetscWrap.jl has been tested with slepc-3.13.1 Complex numbers are not supported yet.
-
-## How to use it
-You will find examples of use by building the documentation: `julia SlepcWrap.jl/docs/make.jl`. Here is one of the examples:
-### Helmholtz equation
+# Helmholtz equation with API legacy names
 In this example, we use the SLEPc to find the eigenvalues of the following Helmholtz equation:
 ``u'' + \omega^2 u = 0`` associated to Dirichlet boundary conditions on the domain ``[0,1]``. Hence
 the theoritical eigenvalues are ``\omega = k \pi`` with ``k \in \mathbb{Z}^*``; and the associated
@@ -188,4 +165,7 @@ SlepcFinalize()
 
 ```
 
+---
+
+*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
 

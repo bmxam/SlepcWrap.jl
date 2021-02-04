@@ -1,21 +1,6 @@
-module Helmholtz #hide
-# # Helmholtz equation
-# In this example, we use the SLEPc to find the eigenvalues of the following Helmholtz equation:
-# ``u'' + \omega^2 u = 0`` associated to Dirichlet boundary conditions on the domain ``[0,1]``. Hence
-# the theoritical eigenvalues are ``\omega = k \pi`` with ``k \in \mathbb{Z}^*``; and the associated
-# eigenvectors are ``u(x) = \sin(k\pix)``.
-# A centered finite difference scheme is used for the spatial discretization.
-#
-# The equation is written in matrix form ``Au = \alpha Bu`` where ``\alpha = \omega^2``.
-#
-# To run this example, simplfy excute `mpirun -n your_favourite_integer julia helmholtz_FD.jl`
-#
-# In this example, PETSc/SLEPc legacy method names are used. For more fancy names, check the next example.
-#
-# Note that the way we achieve things in the document can be highly improved and the purpose of this example
-# is only demonstrate some method calls to give an overview.
-#
-# Start by importing both `PetscWrap`, for the distributed matrices, and `SlepcWrap` for the eigenvalues.
+@testset "Helmholtz 1" begin
+
+# Only on one processor...
 using PetscWrap
 using SlepcWrap
 
@@ -23,12 +8,7 @@ using SlepcWrap
 n = 21
 Δx = 1. / (n - 1)
 
-# Initialize SLEPc. Either without arguments, calling `SlepcInitialize()` or using "command-line" arguments.
-# To do so, either provide the arguments as one string, for instance
-# `SlepcInitialize("-eps_max_it 100 -eps_tol 1e-5")` or provide each argument in
-# separate strings : `PetscInitialize(["-eps_max_it", "100", "-eps_tol", "1e-5")`.
-# Here we ask for the five closest eigenvalues to ``0``, using a non-zero pivot for the LU factorization and a
-# "shift-inverse" process.
+# Initialize SLEPc
 SlepcInitialize("-eps_target 0 -eps_nev 5 -st_pc_factor_shift_type NONZERO -st_type sinvert")
 
 # Create the problem matrices, set sizes and apply "command-line" options. Note that we should
@@ -88,10 +68,8 @@ EPSSolve(eps)
 nconv = EPSGetConverged(eps)
 
 # Then we can get/display these eigenvalues (more precisely their square root, i.e ``\simeq \omega``)
-for ieig in 1:nconv
-    vpr, vpi = EPSGetEigenvalue(eps, ieig)
-    @show √(vpr), √(vpi)
-end
+vpr, vpi = EPSGetEigenvalue(eps, 1)
+@test isapprox(vpr, π; atol = 1e-2)
 
 # We can also play with eigen vectors. First, create two Petsc vectors to allocate memory
 vecr, veci = MatCreateVecs(A)
@@ -99,10 +77,6 @@ vecr, veci = MatCreateVecs(A)
 # Then loop over the eigen pairs and retrieve eigenvectors
 for ieig in 1:nconv
     vpr, vpi, vecpr, vecpi = EPSGetEigenpair(eps, ieig, vecr, veci)
-
-    ## At this point, you can call VecGetArray to obtain a Julia array (see PetscWrap examples).
-    ## If you are on one processor, you can even plot the solution to check that you have a sinus
-    ## solution. On multiple processors, this would require to "gather" the solution on one processor only.
 end
 
 # Finally, let's free the memory
@@ -113,4 +87,7 @@ EPSDestroy(eps)
 # And call finalize when you're done
 SlepcFinalize()
 
-end #hide
+# Test if we reached this point
+@test true
+
+end
