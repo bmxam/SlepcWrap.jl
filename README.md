@@ -15,7 +15,7 @@ To install the package, use the Julia package manager:
 pkg> add SlepcWrap
 ```
 ## Contribute
-Any contribution(s) and/or remark(s) are welcome!
+Any contribution(s) and/or remark(s) are welcome! If you need a function that is not wrapped yet but you don't think you are capable of contributing, post an issue with a minimum working example.
 
 ## SLEPc compat.
 This version of PetscWrap.jl has been tested with slepc-3.13.1 Complex numbers are not supported yet.
