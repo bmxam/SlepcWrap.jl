@@ -2,3 +2,7 @@
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 SlepcWrap = "c3679e3b-785e-4ccc-b734-b7685cbb935e"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
+
+[compat]
+Documenter = "0.26"
+Literate = "2.7"
