@@ -1,3 +1,6 @@
+[![](https://img.shields.io/badge/docs-stable-red.svg)](https://bmxam.github.io/SlepcWrap.jl/stable)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://bmxam.github.io/SlepcWrap.jl/dev)
+
 # SlepcWrap.jl
 
 SlepcWrap.jl is a parallel Julia wrapper for the (awesome) [SLEPc](https://slepc.upv.es/) library. As described on their main page, "SLEPc is a software library for the solution of large scale sparse eigenvalue problems on parallel computers. It is an extension of PETSc and can be used for linear eigenvalue problems in either standard or generalized form, with real or complex arithmetic.".

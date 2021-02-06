@@ -35,6 +35,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com:bmxam/SlepcWrap.jl.git",
+    repo="github.com/bmxam/SlepcWrap.jl.git",
     push_preview = true
 )
