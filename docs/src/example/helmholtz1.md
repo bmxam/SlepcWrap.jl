@@ -1,5 +1,5 @@
 
-# Helmholtz equation with API legacy names
+# Helmholtz equation
 In this example, we use the SLEPc to find the eigenvalues of the following Helmholtz equation:
 ``u'' + \omega^2 u = 0`` associated to Dirichlet boundary conditions on the domain ``[0,1]``. Hence
 the theoritical eigenvalues are ``\omega = k \pi`` with ``k \in \mathbb{Z}^*``; and the associated

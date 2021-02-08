@@ -24,9 +24,11 @@ function get_slepc_location()
     if(length(SLEPC_LIB) == 0)
         # Workaround for automerging on RegistryCI or doc deployment
         if(haskey(ENV,"JULIA_REGISTRYCI_AUTOMERGE") || haskey(ENV, "DOC_DEPLOYMENT"))
+            @warn "Setting fictive SLEPc path because of RegistryCI or Doc deployment"
             SLEPC_LIB = "JULIA_REGISTRYCI_AUTOMERGE"
         else
-            throw(ErrorException("PETSc shared library (libslepc.so) not found. Please check that SLEPC_DIR and PETSC_ARCH env. variables are set."))
+            @show ENV
+            throw(ErrorException("SLEPc shared library (libslepc.so) not found. Please check that SLEPC_DIR and PETSC_ARCH env. variables are set."))
         end
     end
 
