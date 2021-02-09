@@ -1,5 +1,5 @@
-[![](https://img.shields.io/badge/docs-stable-red.svg)](https://bmxam.github.io/SlepcWrap.jl/stable)
-[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://bmxam.github.io/SlepcWrap.jl/dev)
+[![](https://img.shields.io/badge/docs-stable-red.svg)](https://bmxam.github.io/SlepcWrap.jl/stable/)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://bmxam.github.io/SlepcWrap.jl/dev/)
 
 # SlepcWrap.jl
 
