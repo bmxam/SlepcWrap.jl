@@ -10,18 +10,18 @@ end
 Base.cconvert(::Type{CEPS}, eps::SlepcEPS) = eps.ptr[]
 
 """
-    EPSCreate(comm, eps::SlepcEPS)
+    EPSCreate(comm::MPI.Comm, eps::SlepcEPS)
 
 Wrapper for EPSCreate
 """
-function EPSCreate(comm, eps::SlepcEPS)
+function EPSCreate(comm::MPI.Comm, eps::SlepcEPS)
     error = ccall((:EPSCreate, libslepc), PetscErrorCode, (MPI.MPI_Comm, Ptr{CEPS}), comm, eps.ptr)
     @assert iszero(error)
 end
 
-function EPSCreate()
+function EPSCreate(comm::MPI.Comm = MPI.COMM_WORLD)
     eps = SlepcEPS()
-    EPSCreate(MPI.COMM_WORLD, eps)
+    EPSCreate(comm, eps)
     return eps
 end
 
