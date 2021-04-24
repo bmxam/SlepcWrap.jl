@@ -1,20 +1,6 @@
-module Helmholtz #hide
-# # Helmholtz equation
-# In this example, we use the SLEPc to find the eigenvalues of the following Helmholtz equation:
-# ``u'' + \omega^2 u = 0`` associated to Dirichlet boundary conditions on the domain ``[0,1]``. Hence
-# the theoritical eigenvalues are ``\omega = k \pi`` with ``k \in \mathbb{Z}^*``; and the associated
-# eigenvectors are ``u(x) = \sin(k\pix)``.
-# A centered finite difference scheme is used for the spatial discretization.
-#
-# The equation is written in matrix form ``Au = \alpha Bu`` where ``\alpha = \omega^2``.
-#
-# To run this example, simplfy excute `mpirun -n your_favourite_integer julia helmholtz_FD.jl`
-#
-# In this example, PETSc/SLEPc legacy method names are used. For more fancy names, check the next example.
-#
-# Note that the way we achieve things in the document can be highly improved and the purpose of this example
-# is only demonstrate some method calls to give an overview.
-#
+@testset "Helmholtz" begin
+
+# Only on one processor...
 # Start by importing both `PetscWrap`, for the distributed matrices, and `SlepcWrap` for the eigenvalues.
 using PetscWrap
 using SlepcWrap
@@ -47,27 +33,28 @@ A_rstart, A_rend = MatGetOwnershipRange(A)
 B_rstart, B_rend = MatGetOwnershipRange(B)
 
 # Fill matrix A  with second order derivative central scheme
-for i in A_rstart:A_rend
-    if(i == 1)
-        A[1, 1:2] = [-2., 1] / Δx^2
-    elseif (i == n)
-        A[n, n-1:n] = [1., -2.] / Δx^2
+for i in A_rstart:A_rend-1
+    if (i == 0)
+        MatSetValues(A, [0], [0, 1], [-2., 1] / Δx^2, INSERT_VALUES)
+    elseif (i == n-1)
+        MatSetValues(A, [n-1], [n-2, n-1], [1., -2.] / Δx^2, INSERT_VALUES)
     else
-        A[i, i-1:i+1] = [1., -2., 1.] / Δx^2
+        MatSetValues(A, [i], i-1:i+1, [1., -2., 1.] / Δx^2, INSERT_VALUES)
     end
 end
 
 # Fill matrix B with identity matrix
-for i in B_rstart:B_rend
-    B[i,i] = -1.
+for i in B_rstart:B_rend-1
+    MatSetValue(B, i, i, -1., INSERT_VALUES)
 end
 
-# Set boundary conditions : u(0) = 0 and u(1) = 0. Only the processor handling the corresponding rows are playing a role here.
-(A_rstart == 1) && (A[1, 1:2] = [1. 0.] )
-(B_rstart == 1) && (B[1,   1] = 0.      )
+# Set boundary conditions : u(0) = 0 and u(1) = 0. Only the processor
+# handling the corresponding rows are playing a role here.
+(A_rstart == 0) && MatSetValues(A, [0], [0,1], [1., 0.], INSERT_VALUES)
+(B_rstart == 0) && MatSetValue(B, 0, 0, 0., INSERT_VALUES)
 
-(A_rend == n) && (A[n, n-1:n] = [0. 1.] )
-(B_rend == n) && (B[n,     n] = 0.      )
+(A_rend == n) && MatSetValues(A, [n-1], [n-2,n-1], [0., 1.], INSERT_VALUES)
+(B_rend == n) && MatSetValue(B, n-1, n-1, 0., INSERT_VALUES)
 
 # Assemble the matrices
 MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY)
@@ -88,16 +75,23 @@ EPSSolve(eps)
 nconv = EPSGetConverged(eps)
 
 # Then we can get/display these eigenvalues (more precisely their square root, i.e ``\simeq \omega``)
-for ieig in 1:nconv
+expected = (
+    3.138363829113791,
+    6.2573786016092345,
+    9.337814554236218,
+    12.360679774997893
+)
+for ieig in 0:3
     vpr, vpi = EPSGetEigenvalue(eps, ieig)
-    @show √(vpr), √(vpi)
+    @test isapprox(√(real(vpr)), expected[ieig + 1])
+
 end
 
 # We can also play with eigen vectors. First, create two Petsc vectors to allocate memory
 vecr, veci = MatCreateVecs(A)
 
 # Then loop over the eigen pairs and retrieve eigenvectors
-for ieig in 1:nconv
+for ieig in 0:nconv-1
     vpr, vpi, vecpr, vecpi = EPSGetEigenpair(eps, ieig, vecr, veci)
 
     ## At this point, you can call VecGetArray to obtain a Julia array (see PetscWrap examples).
@@ -113,4 +107,7 @@ EPSDestroy(eps)
 # And call finalize when you're done
 SlepcFinalize()
 
-end #hide
+# Test if we reached this point
+@test true
+
+end

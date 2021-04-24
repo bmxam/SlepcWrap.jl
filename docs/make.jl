@@ -8,8 +8,8 @@ using Literate
 example_src = joinpath(@__DIR__,"..","example")
 example_dir = joinpath(@__DIR__,"src","example")
 Sys.rm(example_dir; recursive=true, force=true)
-Literate.markdown(joinpath(example_src, "helmholtz1.jl"), example_dir; documenter = false, execute = false) # documenter = false to avoid Documenter to execute cells
-Literate.markdown(joinpath(example_src, "helmholtz2.jl"), example_dir; documenter = false, execute = false) # documenter = false to avoid Documenter to execute cells
+Literate.markdown(joinpath(example_src, "helmholtz.jl"), example_dir; documenter = false, execute = false) # documenter = false to avoid Documenter to execute cells
+Literate.markdown(joinpath(example_src, "helmholtz_fancy.jl"), example_dir; documenter = false, execute = false) # documenter = false to avoid Documenter to execute cells
 
 makedocs(;
     modules=[SlepcWrap],
@@ -24,13 +24,16 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Examples" => Any[
-            "example/helmholtz1.md",
-            "example/helmholtz2.md",
+            "example/helmholtz.md",
+        ],
+        "Fancy examples" => Any[
+            "example/helmholtz_fancy.md",
         ],
         "API Reference" => Any[
             "api/init.md",
             "api/eps.md",
-        ]
+        ],
+        "API fancy" => "api/fancy/fancy.md",
     ],
 )
 
