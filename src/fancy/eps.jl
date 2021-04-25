@@ -3,9 +3,15 @@
 
 For a standard eigenvalue prolem.
 """
-function create_eps(A::PetscMat)
+function create_eps(A::PetscMat; auto_setup = false)
     eps = EPSCreate()
     EPSSetOperators(eps, A)
+
+    if (auto_setup)
+        set_from_options!(eps)
+        set_up!(eps)
+    end
+
     return eps
 end
 
@@ -14,9 +20,15 @@ end
 
 For a generalized eigenvalue problem
 """
-function create_eps(A::PetscMat, B::PetscMat)
+function create_eps(A::PetscMat, B::PetscMat; auto_setup = false)
     eps = EPSCreate()
     EPSSetOperators(eps, A, B)
+
+    if (auto_setup)
+        set_from_options!(eps)
+        set_up!(eps)
+    end
+
     return eps
 end
 

@@ -10,6 +10,7 @@ example_dir = joinpath(@__DIR__,"src","example")
 Sys.rm(example_dir; recursive=true, force=true)
 Literate.markdown(joinpath(example_src, "helmholtz.jl"), example_dir; documenter = false, execute = false) # documenter = false to avoid Documenter to execute cells
 Literate.markdown(joinpath(example_src, "helmholtz_fancy.jl"), example_dir; documenter = false, execute = false) # documenter = false to avoid Documenter to execute cells
+Literate.markdown(joinpath(example_src, "complex.jl"), example_dir; documenter = false, execute = false) # documenter = false to avoid Documenter to execute cells
 
 makedocs(;
     modules=[SlepcWrap],
@@ -28,6 +29,7 @@ makedocs(;
         ],
         "Fancy examples" => Any[
             "example/helmholtz_fancy.md",
+            "example/complex.md",
         ],
         "API Reference" => Any[
             "api/init.md",

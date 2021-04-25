@@ -107,7 +107,7 @@ end
 """
     EPSGetEigenvalue(eps::SlepcEPS, ieig)
 
-Wrapper for EPSGetEigenvalue . `ieig` must be in [0, EPSGetConverged-1] (SLEPc 0-based indexing)
+Wrapper for EPSGetEigenvalue . SLEPc 0-based indexing is used : `0 < ieig < EPSGetConverged-1` ()
 
 A tuple (real, imag) is returned.
 """
@@ -128,7 +128,7 @@ end
 """
     EPSGetTolerances(eps::SlepcEPS)
 
-Wrapper for EPSGetTolerances
+Wrapper for `EPSGetTolerances`
 """
 function EPSGetTolerances(eps::SlepcEPS)
     tol = Ref{PetscReal}(0)
@@ -143,7 +143,7 @@ end
 """
     EPSGetEigenpair(eps::SlepcEPS, ieig, vecr::PetscVec, veci::PetscVec)
 
-Wrapper for EPSGetEigenpair. `ieig` must be in [0, EPSGetConverged-1] (SLEPc 0-based indexing).
+Wrapper for `EPSGetEigenpair`. SLEPc 0-based indexing is used : `0 < ieig < EPSGetConverged-1`
 """
 function EPSGetEigenpair(eps::SlepcEPS, ieig, vecr::PetscVec, veci::PetscVec)
     eigr = Ref{PetscScalar}(0.)
