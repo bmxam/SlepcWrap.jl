@@ -1,5 +1,5 @@
-[![](https://img.shields.io/badge/docs-stable-red.svg)](https://bmxam.github.io/SlepcWrap.jl/stable/)
-[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://bmxam.github.io/SlepcWrap.jl/dev/)
+[![](https://img.shields.io/badge/docs-stable-red.svg)](https://bmxam.github.io/SlepcWrap.jl/stable)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://bmxam.github.io/SlepcWrap.jl/dev)
 
 # SlepcWrap.jl
 
@@ -92,13 +92,13 @@ B_rstart, B_rend = MatGetOwnershipRange(B)
 Fill matrix A  with second order derivative central scheme
 
 ```julia
-for i in A_rstart:A_rend
-    if(i == 1)
-        A[1, 1:2] = [-2., 1] / Δx^2
-    elseif (i == n)
-        A[n, n-1:n] = [1., -2.] / Δx^2
+for i in A_rstart:A_rend-1
+    if (i == 0)
+        MatSetValues(A, [0], [0, 1], [-2., 1] / Δx^2, INSERT_VALUES)
+    elseif (i == n-1)
+        MatSetValues(A, [n-1], [n-2, n-1], [1., -2.] / Δx^2, INSERT_VALUES)
     else
-        A[i, i-1:i+1] = [1., -2., 1.] / Δx^2
+        MatSetValues(A, [i], i-1:i+1, [1., -2., 1.] / Δx^2, INSERT_VALUES)
     end
 end
 ```
@@ -106,19 +106,20 @@ end
 Fill matrix B with identity matrix
 
 ```julia
-for i in B_rstart:B_rend
-    B[i,i] = -1.
+for i in B_rstart:B_rend-1
+    MatSetValue(B, i, i, -1., INSERT_VALUES)
 end
 ```
 
-Set boundary conditions : u(0) = 0 and u(1) = 0. Only the processor handling the corresponding rows are playing a role here.
+Set boundary conditions : u(0) = 0 and u(1) = 0. Only the processor
+handling the corresponding rows are playing a role here.
 
 ```julia
-(A_rstart == 1) && (A[1, 1:2] = [1. 0.] )
-(B_rstart == 1) && (B[1,   1] = 0.      )
+(A_rstart == 0) && MatSetValues(A, [0], [0,1], [1., 0.], INSERT_VALUES)
+(B_rstart == 0) && MatSetValue(B, 0, 0, 0., INSERT_VALUES)
 
-(A_rend == n) && (A[n, n-1:n] = [0. 1.] )
-(B_rend == n) && (B[n,     n] = 0.      )
+(A_rend == n) && MatSetValues(A, [n-1], [n-2,n-1], [0., 1.], INSERT_VALUES)
+(B_rend == n) && MatSetValue(B, n-1, n-1, 0., INSERT_VALUES)
 ```
 
 Assemble the matrices
@@ -154,7 +155,7 @@ nconv = EPSGetConverged(eps)
 Then we can get/display these eigenvalues (more precisely their square root, i.e ``\simeq \omega``)
 
 ```julia
-for ieig in 1:nconv
+for ieig in 0:nconv - 1
     vpr, vpi = EPSGetEigenvalue(eps, ieig)
     @show √(vpr), √(vpi)
 end
@@ -169,7 +170,7 @@ vecr, veci = MatCreateVecs(A)
 Then loop over the eigen pairs and retrieve eigenvectors
 
 ```julia
-for ieig in 1:nconv
+for ieig in 0:nconv-1
     vpr, vpi, vecpr, vecpi = EPSGetEigenpair(eps, ieig, vecr, veci)
 
     # At this point, you can call VecGetArray to obtain a Julia array (see PetscWrap examples).
@@ -192,4 +193,3 @@ And call finalize when you're done
 SlepcFinalize()
 
 ```
-
