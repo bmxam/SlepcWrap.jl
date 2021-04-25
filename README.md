@@ -21,9 +21,11 @@ pkg> add SlepcWrap
 Any contribution(s) and/or remark(s) are welcome! If you need a function that is not wrapped yet but you don't think you are capable of contributing, post an issue with a minimum working example.
 
 ## SLEPc compat.
-This version of PetscWrap.jl has been tested with slepc-3.13.1 Complex numbers are not supported yet.
+This version of PetscWrap.jl has been tested with slepc-3.13.1. Complex numbers are supported.
 
 ## How to use it
+SLEPc methods wrappers share the same name as their C equivalent : for instance `EPSCreate` or `EPSGetEigenvalue`. Furthermore, an optional "higher level" API, referred to as "fancy", is exposed : for instance `create_eps` or `get_eig`). Note that this second way of manipulating SLEPc will evolve according the package's author needs while the first one will try to follow SLEPc official API.
+
 You will find examples of use by building the documentation: `julia SlepcWrap.jl/docs/make.jl`. Here is one of the examples:
 ### Helmholtz equation
 In this example, we use the SLEPc to find the eigenvalues of the following Helmholtz equation:

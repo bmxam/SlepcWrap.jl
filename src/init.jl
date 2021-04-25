@@ -1,12 +1,4 @@
 """
-    Wrapper to SlepcInitializeNoArguments
-"""
-function SlepcInitialize()
-    error = ccall((:SlepcInitializeNoArguments, libslepc), PetscErrorCode, ())
-    @assert iszero(error)
-end
-
-"""
     Wrapper to SlepcInitializeNoPointers
 
 # Implementation
@@ -28,6 +20,24 @@ end
 
 SlepcInitialize(args::Vector{String}) = SlepcInitialize(args, "", "")
 SlepcInitialize(args::String) = SlepcInitialize(convert(Vector{String}, split(args)), "", "")
+
+"""
+    Initialize SLEPc.
+
+If `cmd_line_args == true`, then command line arguments passed to Julia are used as
+arguments for SLEPc (leading to a call to `SlepcInitializeNoPointers`).
+
+Otherwise, if `cmd_line_args == false`, initialize SLEPc without arguments (leading
+to a call to `SlepcInitializeNoArguments`).
+"""
+function SlepcInitialize(cmd_line_args::Bool = false)
+    if (cmd_line_args)
+        SlepcInitialize(ARGS)
+    else
+        error = ccall((:SlepcInitializeNoArguments, libslepc), PetscErrorCode, ())
+        @assert iszero(error)
+    end
+end
 
 """
     Wrapper to SlepcFinalize

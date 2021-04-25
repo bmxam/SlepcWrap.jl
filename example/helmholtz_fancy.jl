@@ -1,5 +1,5 @@
 module Helmholtz #hide
-# # Helmholtz equation
+# # Helmholtz equation with fancy names
 # In this example, we use the SLEPc to find the eigenvalues of the following Helmholtz equation:
 # ``u'' + \omega^2 u = 0`` associated to Dirichlet boundary conditions on the domain ``[0,1]``. Hence
 # the theoritical eigenvalues are ``\omega = k \pi`` with ``k \in \mathbb{Z}^*``; and the associated
@@ -47,7 +47,7 @@ B_rstart, B_rend = get_range(B)
 
 # Fill matrix A  with second order derivative central scheme
 for i in A_rstart:A_rend
-    if(i == 1)
+    if (i == 1)
         A[1, 1:2] = [-2., 1] / Δx^2
     elseif (i == n)
         A[n, n-1:n] = [1., -2.] / Δx^2

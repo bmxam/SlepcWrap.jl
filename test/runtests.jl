@@ -14,5 +14,6 @@ end
 
 
 @testset "SlepcWrap.jl" begin
-    include("./helmholtz1.jl")
+    include("./helmholtz.jl")
+    include("./helmholtz_fancy.jl")
 end
