@@ -30,7 +30,7 @@ arguments for SLEPc (leading to a call to `SlepcInitializeNoPointers`).
 Otherwise, if `cmd_line_args == false`, initialize SLEPc without arguments (leading
 to a call to `SlepcInitializeNoArguments`).
 """
-function SlepcInitialize(cmd_line_args::Bool = false)
+function SlepcInitialize(cmd_line_args::Bool = true)
     if (cmd_line_args)
         SlepcInitialize(ARGS)
     else

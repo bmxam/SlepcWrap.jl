@@ -184,12 +184,12 @@ function EPSGetEigenpair(eps::SlepcEPS, ieig)
 end
 
 """
-    EPSView(eps::SlepcEPS, view::PetscViewer = C_NULL)
+    EPSView(eps::SlepcEPS, viewer::PetscViewer = PetscViewerStdWorld())
 
 Wrapper for EPSView
 """
-function EPSView(eps::SlepcEPS, viewer::PetscViewer = C_NULL)
-    error = ccall((:EPSView, libslepc), PetscErrorCode, (CEPS, PetscViewer), eps, viewer)
+function EPSView(eps::SlepcEPS, viewer::PetscViewer = PetscViewerStdWorld())
+    error = ccall((:EPSView, libslepc), PetscErrorCode, (CEPS, CViewer), eps, viewer)
     @assert iszero(error)
 end
 
