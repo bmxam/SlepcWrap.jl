@@ -102,6 +102,12 @@ for ieig in 1:nconv
     ## solution. On multiple processors, this would require to "gather" the solution on one processor only.
 end
 
+# Export eigenvalues to a file
+eigenvalues2file(eps, 1:nconv, "/tmp/eigs.dat")
+
+# Export eigenvectors as two ASCII matrices (real/imag) (experimental function)
+eigenvectors2file(eps, 1:nconv, "/tmp/eigenvectors")
+
 # Finally, let's free the memory
 destroy!(A)
 destroy!(B)

@@ -1,6 +1,7 @@
 module SlepcWrap
     using PetscWrap
     using MPI
+    using DelimitedFiles
 
     include("load.jl")
     include("init.jl")
@@ -20,6 +21,7 @@ module SlepcWrap
             EPSGetTolerances,
             EPSGetEigenpair,
             EPSGetEigenvalue,
+            EPSGetEigenvector,
             EPSGetOperators,
             EPSSetFromOptions,
             EPSSetOperators,
@@ -29,6 +31,8 @@ module SlepcWrap
 
     include("fancy/eps.jl")
     export  create_eps,
+            eigenvalues2file,
+            eigenvectors2file,
             get_eig, get_eigs,
             get_eigenvalue, get_eigenvalues,
             get_eigenpair,

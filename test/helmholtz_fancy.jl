@@ -94,6 +94,9 @@ for ieig in 1:nconv
     ## solution. On multiple processors, this would require to "gather" the solution on one processor only.
 end
 
+# Export eigenvalues to a file
+eigenvalues2file(eps, 1:nconv, "/tmp/eigs.dat")
+
 # Finally, let's free the memory
 destroy!(A)
 destroy!(B)

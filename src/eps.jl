@@ -2,8 +2,9 @@ const CEPS = Ptr{Cvoid}
 
 struct SlepcEPS
     ptr::Ref{CEPS}
+    comm::MPI.Comm
 
-    SlepcEPS() = new(Ref{Ptr{Cvoid}}())
+    SlepcEPS(comm::MPI.Comm) = new(Ref{Ptr{Cvoid}}(), comm)
 end
 
 # allows us to pass SlepcEPS objects directly into CEPS ccall signatures
@@ -12,16 +13,12 @@ Base.cconvert(::Type{CEPS}, eps::SlepcEPS) = eps.ptr[]
 """
     EPSCreate(comm::MPI.Comm, eps::SlepcEPS)
 
-Wrapper for EPSCreate
+Wrapper for `EPSCreate`
 """
-function EPSCreate(comm::MPI.Comm, eps::SlepcEPS)
+function EPSCreate(comm::MPI.Comm = MPI.COMM_WORLD)
+    eps = SlepcEPS(comm)
     error = ccall((:EPSCreate, libslepc), PetscErrorCode, (MPI.MPI_Comm, Ptr{CEPS}), comm, eps.ptr)
     @assert iszero(error)
-end
-
-function EPSCreate(comm::MPI.Comm = MPI.COMM_WORLD)
-    eps = SlepcEPS()
-    EPSCreate(comm, eps)
     return eps
 end
 
@@ -71,8 +68,8 @@ end
 Wrapper for EPSGetOperators
 """
 function EPSGetOperators(eps::SlepcEPS)
-    A = PetscMat()
-    B = PetscMat()
+    A = PetscMat(eps.comm)
+    B = PetscMat(eps.comm)
 
     error = ccall((:EPSGetOperators, libslepc), PetscErrorCode, (CEPS, Ptr{CMat}, Ptr{CMat}), eps, A.ptr, B.ptr)
     @assert iszero(error)
@@ -123,6 +120,20 @@ function EPSGetEigenvalue(eps::SlepcEPS, ieig)
     @assert iszero(error)
 
     return eigr[], eigi[]
+end
+
+"""
+EPSGetEigenvector(eps::SlepcEPS, ivec, vecr::PetscVec, veci::PetscVec)
+
+Wrapper for `EPSGetEigenvector`. SLEPc 0-based indexing is used : `0 < ivec < EPSGetConverged-1` ()
+"""
+function EPSGetEigenvector(eps::SlepcEPS, ivec, vecr::PetscVec, veci::PetscVec)
+    error = ccall((:EPSGetEigenvector, libslepc),
+                    PetscErrorCode,
+                    (CEPS, PetscInt, CVec, CVec),
+                    eps, ivec, vecr, veci
+    )
+    @assert iszero(error)
 end
 
 """
