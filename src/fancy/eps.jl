@@ -103,13 +103,45 @@ PetscWrap.destroy!(eps::SlepcEPS) = EPSDestroy(eps)
 
 Write eigenvalues to a CSV file.
 
+If `two_cols == true`, the output file is a `(neig, 2)` array (without any complex number).
+
 `mpi_rank` is the rank of the processor writing the eigenvalue file.
 """
-function eigenvalues2file(eps::SlepcEPS, ieigs, eigs_path = "eigenvalues.dat"; mpi_rank = 0, delim=",")
+function eigenvalues2file(
+    eps::SlepcEPS,
+    eigs_path::String = "eigenvalues.dat",
+    ieigs = 1:neigs(eps);
+    two_cols = false,
+    write_index = false,
+    write_header = false,
+    comment = "#",
+    mpi_rank = 0,
+    delim=",")
+
+    # Get eigenvalues
+    λ = get_eig(eps, ieigs)
+
+    # Split real and imag parts (optionnal)
+    two_cols && (λ = hcat(real.(λ), imag.(λ)))
+
+    # Add index (optionnal)
+    write_index && (λ = hcat(ieigs, λ))
+
+    # Prepare header
+    if (write_header)
+        header = comment
+        write_index && (header *= "i,")
+        if (!two_cols)
+            header *= "ω"
+        else
+            header *= "ωr,ωi"
+        end
+    end
+
     # Write eigenvalues to file
-    λ = get_eigs(eps)
     if (MPI.Comm_rank(eps.comm) == mpi_rank)
         open(eigs_path, "w") do io
+            write_header && println(io, header)
             writedlm(io, λ, delim)
         end
     end
@@ -120,12 +152,10 @@ end
 
 Concatenate specified eigenvectors in two files : real and imag parts.
 
-`mpi_rank` is the rank of the processor writing the eigenvalue file.
-
 # Warning
 This experimental : it may allocate a lot of memory. Use it at your own risk.
 """
-function eigenvectors2file(eps::SlepcEPS, ivecs, vectors_path = "eigenvectors"; mpi_rank = 0, type = "ascii", format = PETSC_VIEWER_ASCII_CSV)
+function eigenvectors2file(eps::SlepcEPS, vectors_path::String = "eigenvectors", ivecs = 1:neigs(eps); type = "ascii", format = PETSC_VIEWER_ASCII_CSV)
     # Get local size
     A, B = EPSGetOperators(eps)
     irows = get_urange(A)
@@ -182,20 +212,9 @@ function eigenvectors2file(eps::SlepcEPS, ivecs, vectors_path = "eigenvectors"; 
     assemble!(mat_r, MAT_FINAL_ASSEMBLY)
     assemble!(mat_i, MAT_FINAL_ASSEMBLY)
 
-    # Prepare viewer
-    viewer = PetscViewerCreate(eps.comm)
-    set_type!(viewer, type)
-    set_mode!(viewer, FILE_MODE_WRITE)
-    push_format!(viewer, format)
-
-    # Write real matrix to file
-    set_name!(viewer, vectors_path * "_r.dat")
-    MatView(mat_r, viewer)
-
-    # Write imag matrix to file (reuse viewer)
-    set_name!(viewer, vectors_path * "_i.dat")
-    MatView(mat_i, viewer)
-    destroy!(viewer)
+    # Write matrices to file
+    mat2file(mat_r, vectors_path * "_r.dat")
+    mat2file(mat_i, vectors_path * "_i.dat")
 
     # Free memory
     destroy!.((mat_r, mat_i))
