@@ -55,7 +55,7 @@ end
 """
     EPSSetFromOptions(eps::SlepcEPS)
 
-Wrapper for EPSSetFromOptions
+Wrapper for `EPSSetFromOptions`
 """
 function EPSSetFromOptions(eps::SlepcEPS)
     error = ccall((:EPSSetFromOptions, libslepc), PetscErrorCode, (CEPS,), eps)
@@ -63,9 +63,20 @@ function EPSSetFromOptions(eps::SlepcEPS)
 end
 
 """
+    EPSSetTarget(eps::SlepcEPS, target::PetscScalar)
+
+Wrapper for `EPSSetTarget`
+"""
+function EPSSetTarget(eps::SlepcEPS, target::PetscScalar)
+    error = ccall((:EPSSetTarget, libslepc), PetscErrorCode, (CEPS, PetscScalar), eps, target)
+    @assert iszero(error)
+end
+EPSSetTarget(eps::SlepcEPS, target::Number) = EPSSetTarget(eps, PetscScalar(target))
+
+"""
     EPSGetOperators(eps::SlepcEPS)
 
-Wrapper for EPSGetOperators
+Wrapper for `EPSGetOperators`
 """
 function EPSGetOperators(eps::SlepcEPS)
     A = PetscMat(eps.comm)

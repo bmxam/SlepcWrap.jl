@@ -36,6 +36,8 @@ PetscWrap.set_up!(eps::SlepcEPS) = EPSSetUp(eps)
 
 PetscWrap.set_from_options!(eps::SlepcEPS) = EPSSetFromOptions(eps)
 
+const set_target! = EPSSetTarget
+
 PetscWrap.solve!(eps::SlepcEPS) = EPSSolve(eps)
 
 const neigs = EPSGetConverged

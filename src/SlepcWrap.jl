@@ -25,6 +25,7 @@ module SlepcWrap
             EPSGetOperators,
             EPSSetFromOptions,
             EPSSetOperators,
+            EPSSetTarget,
             EPSSetUp,
             EPSSolve,
             EPSView
@@ -37,5 +38,6 @@ module SlepcWrap
             get_eigenvalue, get_eigenvalues,
             get_eigenpair,
             get_tolerances,
+            set_target!,
             neigs
 end
