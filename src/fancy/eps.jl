@@ -155,7 +155,7 @@ end
 Concatenate specified eigenvectors in two files : real and imag parts.
 
 # Warning
-This experimental : it may allocate a lot of memory. Use it at your own risk.
+This function is experimental : it may allocate a lot of memory. Use it at your own risk.
 """
 function eigenvectors2file(eps::SlepcEPS, vectors_path::String = "eigenvectors", ivecs = 1:neigs(eps); type = "ascii", format = PETSC_VIEWER_ASCII_CSV)
     # Get local size
@@ -164,9 +164,12 @@ function eigenvectors2file(eps::SlepcEPS, vectors_path::String = "eigenvectors",
     nrows_l = length(irows)
     @assert nrows_l == length(get_urange(B)) # necessary condition
 
+    @show ivecs
+    @show length(ivecs)
+
     # Create dense matrices (nnodes x neigs)
-    mat_r = MatCreateDense(eps.comm, nrows_l, length(ivecs), PETSC_DECIDE, PETSC_DECIDE)
-    mat_i = MatCreateDense(eps.comm, nrows_l, length(ivecs), PETSC_DECIDE, PETSC_DECIDE)
+    mat_r = MatCreateDense(eps.comm, nrows_l, PETSC_DECIDE, PETSC_DECIDE, length(ivecs))
+    mat_i = MatCreateDense(eps.comm, nrows_l, PETSC_DECIDE, PETSC_DECIDE, length(ivecs))
     set_up!.((mat_r, mat_i))
 
     # Allocate vectors
@@ -175,7 +178,7 @@ function eigenvectors2file(eps::SlepcEPS, vectors_path::String = "eigenvectors",
     set_up!.((vecr, veci))
 
     # Fill these matrices
-    for ivec in ivecs
+    for (icol, ivec) in enumerate(ivecs)
         # Retrieve eigenvector (real and imag)
         #vecr, veci = get_eigenvector(eps, ieig)
         EPSGetEigenvector(eps, ivec - 1, vecr, veci)
@@ -186,7 +189,7 @@ function eigenvectors2file(eps::SlepcEPS, vectors_path::String = "eigenvectors",
 
         #- Append to matrix -> problem using MatSetValues...
         for (iloc, iglob) in enumerate(irows)
-            mat_r[iglob,ivec] = array[iloc]
+            mat_r[iglob,icol] = array[iloc]
         end
         #MatSetValues(mat_r, irows, ivec, array, INSERT_VALUES)
 
@@ -199,7 +202,7 @@ function eigenvectors2file(eps::SlepcEPS, vectors_path::String = "eigenvectors",
 
         #- Append to matrix
         for (iloc, iglob) in enumerate(irows)
-            mat_i[iglob,ivec] = array[iloc]
+            mat_i[iglob,icol] = array[iloc]
         end
         #MatSetValues(mat_i, irows, ivec, array, INSERT_VALUES)
 
