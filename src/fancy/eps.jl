@@ -164,9 +164,6 @@ function eigenvectors2file(eps::SlepcEPS, vectors_path::String = "eigenvectors",
     nrows_l = length(irows)
     @assert nrows_l == length(get_urange(B)) # necessary condition
 
-    @show ivecs
-    @show length(ivecs)
-
     # Create dense matrices (nnodes x neigs)
     mat_r = MatCreateDense(eps.comm, nrows_l, PETSC_DECIDE, PETSC_DECIDE, length(ivecs))
     mat_i = MatCreateDense(eps.comm, nrows_l, PETSC_DECIDE, PETSC_DECIDE, length(ivecs))
