@@ -38,3 +38,5 @@ end
 
 # Absolute path to libslepc.so
 const libslepc = get_slepc_location()
+
+show_slepc_path() = return libslepc
