@@ -158,6 +158,22 @@ Concatenate specified eigenvectors in two files : real and imag parts.
 This function is experimental : it may allocate a lot of memory. Use it at your own risk.
 """
 function eigenvectors2file(eps::SlepcEPS, vectors_path::String = "eigenvectors", ivecs = 1:neigs(eps); type = "ascii", format = PETSC_VIEWER_ASCII_CSV)
+    mat_r, mat_i = eigenvectors2mat(eps, ivecs)
+
+    # Write matrices to file
+    mat2file(mat_r, vectors_path * "_r.dat")
+    mat2file(mat_i, vectors_path * "_i.dat")
+
+    # Free memory
+    destroy!.((mat_r, mat_i))
+end
+
+"""
+    eigenvectors2mat(eps::SlepcEPS, ivecs)
+
+Concatenate specified eigenvectors in two matrices : real and imag parts.
+"""
+function eigenvectors2mat(eps::SlepcEPS, ivecs = 1:neigs(eps))
     # Get local size
     A, B = EPSGetOperators(eps)
     irows = get_urange(A)
@@ -214,10 +230,5 @@ function eigenvectors2file(eps::SlepcEPS, vectors_path::String = "eigenvectors",
     assemble!(mat_r, MAT_FINAL_ASSEMBLY)
     assemble!(mat_i, MAT_FINAL_ASSEMBLY)
 
-    # Write matrices to file
-    mat2file(mat_r, vectors_path * "_r.dat")
-    mat2file(mat_i, vectors_path * "_i.dat")
-
-    # Free memory
-    destroy!.((mat_r, mat_i))
+    return mat_r, mat_i
 end
