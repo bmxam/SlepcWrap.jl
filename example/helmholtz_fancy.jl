@@ -22,7 +22,7 @@ using SlepcWrap
 
 # Number of mesh points and mesh step
 n = 21
-Δx = 1. / (n - 1)
+Δx = 1.0 / (n - 1)
 
 # Initialize SLEPc. Either without arguments, calling `SlepcInitialize()` or using "command-line" arguments.
 # To do so, either provide the arguments as one string, for instance
@@ -48,25 +48,25 @@ B_rstart, B_rend = get_range(B)
 # Fill matrix A  with second order derivative central scheme
 for i in A_rstart:A_rend
     if (i == 1)
-        A[1, 1:2] = [-2., 1] / Δx^2
+        A[1, 1:2] = [-2.0, 1] / Δx^2
     elseif (i == n)
-        A[n, n-1:n] = [1., -2.] / Δx^2
+        A[n, n-1:n] = [1.0, -2.0] / Δx^2
     else
-        A[i, i-1:i+1] = [1., -2., 1.] / Δx^2
+        A[i, i-1:i+1] = [1.0, -2.0, 1.0] / Δx^2
     end
 end
 
 # Fill matrix B with identity matrix
 for i in B_rstart:B_rend
-    B[i,i] = -1.
+    B[i, i] = -1.0
 end
 
 # Set boundary conditions : u(0) = 0 and u(1) = 0. Only the processor handling the corresponding rows are playing a role here.
-(A_rstart == 1) && (A[1, 1:2] = [1. 0.] )
-(B_rstart == 1) && (B[1,   1] = 0.      )
+(A_rstart == 1) && (A[1, 1:2] = [1.0 0.0])
+(B_rstart == 1) && (B[1, 1] = 0.0)
 
-(A_rend == n) && (A[n, n-1:n] = [0. 1.] )
-(B_rend == n) && (B[n,     n] = 0.      )
+(A_rend == n) && (A[n, n-1:n] = [0.0 1.0])
+(B_rend == n) && (B[n, n] = 0.0)
 
 # Assemble the matrices
 assemble!(A)
@@ -103,10 +103,10 @@ for ieig in 1:nconv
 end
 
 # Export eigenvalues to a file
-eigenvalues2file(eps, 1:nconv, "/tmp/eigs.dat")
+eigenvalues2file(eps, "/tmp/eigs.dat", 1:nconv)
 
 # Export eigenvectors as two ASCII matrices (real/imag) (experimental function)
-eigenvectors2file(eps, 1:nconv, "/tmp/eigenvectors")
+eigenvectors2file(eps, "/tmp/eigenvectors", 1:nconv)
 
 # Finally, let's free the memory
 destroy!(A)

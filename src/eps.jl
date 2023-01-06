@@ -15,7 +15,7 @@ Base.cconvert(::Type{CEPS}, eps::SlepcEPS) = eps.ptr[]
 
 Wrapper for `EPSCreate`
 """
-function EPSCreate(comm::MPI.Comm = MPI.COMM_WORLD)
+function EPSCreate(comm::MPI.Comm=MPI.COMM_WORLD)
     eps = SlepcEPS(comm)
     error = ccall((:EPSCreate, libslepc), PetscErrorCode, (MPI.MPI_Comm, Ptr{CEPS}), comm, eps.ptr)
     @assert iszero(error)
@@ -134,9 +134,9 @@ function EPSGetEigenvalue(eps::SlepcEPS, ieig)
     eigi = Ref{PetscScalar}()
 
     error = ccall((:EPSGetEigenvalue, libslepc),
-                   PetscErrorCode,
-                   (CEPS, PetscInt, Ref{PetscScalar}, Ref{PetscScalar}),
-                   eps, PetscInt(ieig), eigr, eigi
+        PetscErrorCode,
+        (CEPS, PetscInt, Ref{PetscScalar}, Ref{PetscScalar}),
+        eps, PetscInt(ieig), eigr, eigi
     )
     @assert iszero(error)
 
@@ -150,9 +150,9 @@ Wrapper for `EPSGetEigenvector`. SLEPc 0-based indexing is used : `0 < ivec < EP
 """
 function EPSGetEigenvector(eps::SlepcEPS, ivec, vecr::PetscVec, veci::PetscVec)
     error = ccall((:EPSGetEigenvector, libslepc),
-                    PetscErrorCode,
-                    (CEPS, PetscInt, CVec, CVec),
-                    eps, ivec, vecr, veci
+        PetscErrorCode,
+        (CEPS, PetscInt, CVec, CVec),
+        eps, ivec, vecr, veci
     )
     @assert iszero(error)
 end
@@ -178,13 +178,13 @@ end
 Wrapper for `EPSGetEigenpair`. SLEPc 0-based indexing is used : `0 < ieig < EPSGetConverged-1`
 """
 function EPSGetEigenpair(eps::SlepcEPS, ieig, vecr::PetscVec, veci::PetscVec)
-    eigr = Ref{PetscScalar}(0.)
-    eigi = Ref{PetscScalar}(0.)
+    eigr = Ref{PetscScalar}(0.0)
+    eigi = Ref{PetscScalar}(0.0)
 
     error = ccall((:EPSGetEigenpair, libslepc),
-                    PetscErrorCode,
-                    (CEPS, PetscInt, Ref{PetscScalar}, Ref{PetscScalar}, CVec, CVec),
-                    eps, PetscInt(ieig), eigr, eigi, vecr, veci
+        PetscErrorCode,
+        (CEPS, PetscInt, Ref{PetscScalar}, Ref{PetscScalar}, CVec, CVec),
+        eps, PetscInt(ieig), eigr, eigi, vecr, veci
     )
     @assert iszero(error)
 
@@ -220,7 +220,7 @@ end
 
 Wrapper for EPSView
 """
-function EPSView(eps::SlepcEPS, viewer::PetscViewer = PetscViewerStdWorld())
+function EPSView(eps::SlepcEPS, viewer::PetscViewer=PetscViewerStdWorld())
     error = ccall((:EPSView, libslepc), PetscErrorCode, (CEPS, CViewer), eps, viewer)
     @assert iszero(error)
 end

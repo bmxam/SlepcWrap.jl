@@ -1,5 +1,5 @@
-# Tutorial from slepc4py manual
 module demo #hide
+# Tutorial from slepc4py manual
 using PetscWrap
 using SlepcWrap
 

@@ -3,7 +3,7 @@
 
 For a standard eigenvalue prolem.
 """
-function create_eps(A::PetscMat; auto_setup = false, comm::MPI.Comm = MPI.COMM_WORLD)
+function create_eps(A::PetscMat; auto_setup=false, comm::MPI.Comm=MPI.COMM_WORLD)
     eps = EPSCreate(comm)
     EPSSetOperators(eps, A)
 
@@ -20,7 +20,7 @@ end
 
 For a generalized eigenvalue problem
 """
-function create_eps(A::PetscMat, B::PetscMat; auto_setup = false, comm::MPI.Comm = MPI.COMM_WORLD)
+function create_eps(A::PetscMat, B::PetscMat; auto_setup=false, comm::MPI.Comm=MPI.COMM_WORLD)
     eps = EPSCreate(comm)
     EPSSetOperators(eps, A, B)
 
@@ -111,13 +111,13 @@ If `two_cols == true`, the output file is a `(neig, 2)` array (without any compl
 """
 function eigenvalues2file(
     eps::SlepcEPS,
-    eigs_path::String = "eigenvalues.dat",
-    ieigs = 1:neigs(eps);
-    two_cols = false,
-    write_index = false,
-    write_header = false,
-    comment = "#",
-    mpi_rank = 0,
+    eigs_path::String="eigenvalues.dat",
+    ieigs=1:neigs(eps);
+    two_cols=false,
+    write_index=false,
+    write_header=false,
+    comment="#",
+    mpi_rank=0,
     delim=",")
 
     # Get eigenvalues
@@ -157,7 +157,7 @@ Concatenate specified eigenvectors in two files : real and imag parts.
 # Warning
 This function is experimental : it may allocate a lot of memory. Use it at your own risk.
 """
-function eigenvectors2file(eps::SlepcEPS, vectors_path::String = "eigenvectors", ivecs = 1:neigs(eps); type = "ascii", format = PETSC_VIEWER_ASCII_CSV)
+function eigenvectors2file(eps::SlepcEPS, vectors_path::String="eigenvectors", ivecs=1:neigs(eps); type="ascii", format=PETSC_VIEWER_ASCII_CSV)
     mat_r, mat_i = eigenvectors2mat(eps, ivecs)
 
     # Write matrices to file
@@ -173,7 +173,7 @@ end
 
 Concatenate specified eigenvectors in two matrices : real and imag parts.
 """
-function eigenvectors2mat(eps::SlepcEPS, ivecs = 1:neigs(eps))
+function eigenvectors2mat(eps::SlepcEPS, ivecs=1:neigs(eps))
     # Get local size
     A, B = EPSGetOperators(eps)
     irows = get_urange(A)
@@ -186,8 +186,8 @@ function eigenvectors2mat(eps::SlepcEPS, ivecs = 1:neigs(eps))
     set_up!.((mat_r, mat_i))
 
     # Allocate vectors
-    vecr = create_vector(PETSC_DECIDE, nrows_l; comm = eps.comm)
-    veci = create_vector(PETSC_DECIDE, nrows_l; comm = eps.comm)
+    vecr = create_vector(PETSC_DECIDE, nrows_l; comm=eps.comm)
+    veci = create_vector(PETSC_DECIDE, nrows_l; comm=eps.comm)
     set_up!.((vecr, veci))
 
     # Fill these matrices
@@ -202,7 +202,7 @@ function eigenvectors2mat(eps::SlepcEPS, ivecs = 1:neigs(eps))
 
         #- Append to matrix -> problem using MatSetValues...
         for (iloc, iglob) in enumerate(irows)
-            mat_r[iglob,icol] = array[iloc]
+            mat_r[iglob, icol] = array[iloc]
         end
         #MatSetValues(mat_r, irows, ivec, array, INSERT_VALUES)
 
@@ -215,7 +215,7 @@ function eigenvectors2mat(eps::SlepcEPS, ivecs = 1:neigs(eps))
 
         #- Append to matrix
         for (iloc, iglob) in enumerate(irows)
-            mat_i[iglob,icol] = array[iloc]
+            mat_i[iglob, icol] = array[iloc]
         end
         #MatSetValues(mat_i, irows, ivec, array, INSERT_VALUES)
 

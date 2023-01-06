@@ -11,7 +11,7 @@ using SlepcWrap
 SlepcInitialize()
 
 # Create matrix
-A = create_matrix(4, 4; auto_setup = true)
+A = create_matrix(4, 4; auto_setup=true)
 
 # Get rows handled by the local processor
 A_rstart, A_rend = get_range(A)
@@ -23,7 +23,7 @@ set_values!(A, I, J, V)
 assemble!(A)
 
 # Now we set up the eigenvalue solver
-eps = create_eps(A; auto_setup = true)
+eps = create_eps(A; auto_setup=true)
 
 # Then we solve
 solve!(eps)
