@@ -7,13 +7,13 @@ I don't know if I am supposed to use PetscInt or not...
 function SlepcInitialize(args::Vector{String}, filename::String, help::String)
     args2 = ["julia"; args]
     nargs = Cint(length(args2))
-    error = ccall( (:SlepcInitializeNoPointers, libslepc),
-            PetscErrorCode,
-            (Cint,
+    error = ccall((:SlepcInitializeNoPointers, libslepc),
+        PetscErrorCode,
+        (Cint,
             Ptr{Ptr{UInt8}},
             Cstring,
             Cstring),
-            nargs, args2, filename, help
+        nargs, args2, filename, help
     )
     @assert iszero(error)
 end
@@ -30,7 +30,7 @@ arguments for SLEPc (leading to a call to `SlepcInitializeNoPointers`).
 Otherwise, if `cmd_line_args == false`, initialize SLEPc without arguments (leading
 to a call to `SlepcInitializeNoArguments`).
 """
-function SlepcInitialize(cmd_line_args::Bool = false)
+function SlepcInitialize(cmd_line_args::Bool=true)
     if (cmd_line_args)
         SlepcInitialize(ARGS)
     else
@@ -43,6 +43,6 @@ end
     Wrapper to SlepcFinalize
 """
 function SlepcFinalize()
-    error = ccall( (:SlepcFinalize, libslepc), PetscErrorCode, ())
+    error = ccall((:SlepcFinalize, libslepc), PetscErrorCode, ())
     @assert iszero(error)
 end
