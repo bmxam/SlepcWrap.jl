@@ -3,6 +3,14 @@ module SlepcWrap
     using MPI
     using DelimitedFiles
 
+    include("const_arch_ind.jl")
+    # export all items of some enums
+    for item in Iterators.flatten((
+        instances(EPSWhich),
+    ))
+    @eval export $(Symbol(item))
+    end
+
     include("load.jl")
     include("init.jl")
     export SlepcInitialize, SlepcFinalize
@@ -27,6 +35,7 @@ module SlepcWrap
             EPSSetOperators,
             EPSSetTarget,
             EPSSetUp,
+            EPSSetWhichEigenpairs,
             EPSSolve,
             EPSView
 

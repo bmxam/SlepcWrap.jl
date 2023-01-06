@@ -8,7 +8,7 @@ module Helmholtz #hide
 #
 # The equation is written in matrix form ``Au = \alpha Bu`` where ``\alpha = \omega^2``.
 #
-# To run this example, simplfy excute `mpirun -n your_favourite_integer julia helmholtz_FD.jl`
+# To run this example, simply execute `mpirun -n your_favourite_integer julia helmholtz.jl`
 #
 # In this example, PETSc/SLEPc legacy method names are used. For more fancy names, check the next example.
 #
@@ -26,7 +26,7 @@ n = 21
 # Initialize SLEPc. Either without arguments, calling `SlepcInitialize()` or using "command-line" arguments.
 # To do so, either provide the arguments as one string, for instance
 # `SlepcInitialize("-eps_max_it 100 -eps_tol 1e-5")` or provide each argument in
-# separate strings : `PetscInitialize(["-eps_max_it", "100", "-eps_tol", "1e-5")`.
+# separate strings : `SlepcInitialize(["-eps_max_it", "100", "-eps_tol", "1e-5")`.
 # Here we ask for the five closest eigenvalues to ``0``, using a non-zero pivot for the LU factorization and a
 # "shift-inverse" process.
 SlepcInitialize("-eps_target 0 -eps_nev 5 -st_pc_factor_shift_type NONZERO -st_type sinvert")
@@ -84,6 +84,9 @@ EPSSetUp(eps)
 
 # Then we solve
 EPSSolve(eps)
+
+# Optional : display informations aboutthe sover
+EPSView(eps)
 
 # And finally we can inspect the solution. Let's first get the number of converged eigenvalues:
 nconv = EPSGetConverged(eps)

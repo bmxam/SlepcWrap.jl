@@ -74,6 +74,16 @@ end
 EPSSetTarget(eps::SlepcEPS, target::Number) = EPSSetTarget(eps, PetscScalar(target))
 
 """
+    EPSSetWhichEigenpairs(eps::SlepcEPS, which::EPSWhich)
+
+Wrapper for `EPSSetWhichEigenpairs`
+"""
+function EPSSetWhichEigenpairs(eps::SlepcEPS, which::EPSWhich)
+    error = ccall((:EPSSetWhichEigenpairs, libslepc), PetscErrorCode, (CEPS, EPSWhich), eps, which)
+    @assert iszero(error)
+end
+
+"""
     EPSGetOperators(eps::SlepcEPS)
 
 Wrapper for `EPSGetOperators`
