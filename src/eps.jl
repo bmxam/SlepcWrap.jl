@@ -126,6 +126,20 @@ function EPSGetEigenvector(eps::SlepcEPS, ivec, vecr::PetscVec, veci::PetscVec)
     @assert iszero(error)
 end
 
+function EPSGetEigenvector(eps::SlepcEPS, ivec)
+    A, _ = EPSGetOperators(eps)
+    vecr, veci = MatCreateVecs(A)
+
+    error = ccall((:EPSGetEigenvector, libslepc),
+        PetscErrorCode,
+        (CEPS, PetscInt, CVec, CVec),
+        eps, ivec, vecr, veci
+    )
+    @assert iszero(error)
+
+    return vecr, veci
+end
+
 """
     EPSGetOperators(eps::SlepcEPS)
 
