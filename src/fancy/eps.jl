@@ -1,9 +1,9 @@
 """
-    create_eps(A::PetscMat)
+    create_eps(A::Mat)
 
 For a standard eigenvalue prolem.
 """
-function create_eps(A::PetscMat; auto_setup=false, comm::MPI.Comm=MPI.COMM_WORLD)
+function create_eps(A::Mat; auto_setup=false, comm::MPI.Comm=MPI.COMM_WORLD)
     eps = EPSCreate(comm)
     EPSSetOperators(eps, A)
 
@@ -16,11 +16,11 @@ function create_eps(A::PetscMat; auto_setup=false, comm::MPI.Comm=MPI.COMM_WORLD
 end
 
 """
-    create_eps(A::PetscMat, B::PetscMat)
+    create_eps(A::Mat, B::Mat)
 
 For a generalized eigenvalue problem
 """
-function create_eps(A::PetscMat, B::PetscMat; auto_setup=false, comm::MPI.Comm=MPI.COMM_WORLD)
+function create_eps(A::Mat, B::Mat; auto_setup=false, comm::MPI.Comm=MPI.COMM_WORLD)
     eps = EPSCreate(comm)
     EPSSetOperators(eps, A, B)
 

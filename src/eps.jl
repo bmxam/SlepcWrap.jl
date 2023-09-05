@@ -48,11 +48,11 @@ function EPSGetConverged(eps::SlepcEPS)
 end
 
 """
-    EPSGetEigenpair(eps::SlepcEPS, ieig, vecr::PetscVec, veci::PetscVec)
+    EPSGetEigenpair(eps::SlepcEPS, ieig, vecr::Vec, veci::Vec)
 
 Wrapper for `EPSGetEigenpair`. SLEPc 0-based indexing is used : `0 < ieig < EPSGetConverged-1`
 """
-function EPSGetEigenpair(eps::SlepcEPS, ieig, vecr::PetscVec, veci::PetscVec)
+function EPSGetEigenpair(eps::SlepcEPS, ieig, vecr::Vec, veci::Vec)
     eigr = Ref{PetscScalar}(0.0)
     eigi = Ref{PetscScalar}(0.0)
 
@@ -67,11 +67,11 @@ function EPSGetEigenpair(eps::SlepcEPS, ieig, vecr::PetscVec, veci::PetscVec)
 end
 
 """
-    EPSGetEigenpair(eps::SlepcEPS, mat::PetscMat, ieig)
+    EPSGetEigenpair(eps::SlepcEPS, mat::Mat, ieig)
 
 Wrapper for EPSGetEigenpair without providing pre-allocated vec. but providing one of the operator matrix
 """
-function EPSGetEigenpair(eps::SlepcEPS, mat::PetscMat, ieig)
+function EPSGetEigenpair(eps::SlepcEPS, mat::Mat, ieig)
     eigr = Ref{PetscScalar}()
     eigi = Ref{PetscScalar}()
     vecr, veci = MatCreateVecs(mat)
@@ -113,11 +113,11 @@ function EPSGetEigenvalue(eps::SlepcEPS, ieig)
 end
 
 """
-EPSGetEigenvector(eps::SlepcEPS, ivec, vecr::PetscVec, veci::PetscVec)
+EPSGetEigenvector(eps::SlepcEPS, ivec, vecr::Vec, veci::Vec)
 
 Wrapper for `EPSGetEigenvector`. SLEPc 0-based indexing is used : `0 < ivec < EPSGetConverged-1` ()
 """
-function EPSGetEigenvector(eps::SlepcEPS, ivec, vecr::PetscVec, veci::PetscVec)
+function EPSGetEigenvector(eps::SlepcEPS, ivec, vecr::Vec, veci::Vec)
     error = ccall((:EPSGetEigenvector, libslepc),
         PetscErrorCode,
         (CEPS, PetscInt, CVec, CVec),
@@ -146,8 +146,8 @@ end
 Wrapper for `EPSGetOperators`
 """
 function EPSGetOperators(eps::SlepcEPS)
-    A = PetscMat(eps.comm)
-    B = PetscMat(eps.comm)
+    A = Mat(eps.comm)
+    B = Mat(eps.comm)
 
     error = ccall((:EPSGetOperators, libslepc), PetscErrorCode, (CEPS, Ptr{CMat}, Ptr{CMat}), eps, A.ptr, B.ptr)
     @assert iszero(error)
@@ -171,21 +171,21 @@ function EPSGetTolerances(eps::SlepcEPS)
 end
 
 """
-    EPSSetOperators(eps::SlepcEPS, A::PetscMat, B::PetscMat)
+    EPSSetOperators(eps::SlepcEPS, A::Mat, B::Mat)
 
 Wrapper for EPSSetOperators with two matrices
 """
-function EPSSetOperators(eps::SlepcEPS, A::PetscMat, B::PetscMat)
+function EPSSetOperators(eps::SlepcEPS, A::Mat, B::Mat)
     error = ccall((:EPSSetOperators, libslepc), PetscErrorCode, (CEPS, CMat, CMat), eps, A, B)
     @assert iszero(error)
 end
 
 """
-    EPSSetOperators(eps::SlepcEPS, A::PetscMat)
+    EPSSetOperators(eps::SlepcEPS, A::Mat)
 
 Wrapper for EPSSetOperators with only one matrix
 """
-function EPSSetOperators(eps::SlepcEPS, A::PetscMat)
+function EPSSetOperators(eps::SlepcEPS, A::Mat)
     error = ccall((:EPSSetOperators, libslepc), PetscErrorCode, (CEPS, CMat, CMat), eps, A, C_NULL)
     @assert iszero(error)
 end
