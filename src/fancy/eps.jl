@@ -92,7 +92,7 @@ get_eigenpair(eps::SlepcEPS, ieig) = EPSGetEigenpair(eps, ieig - 1)
 Return a tuple (vecr, veci) corresponding to the `ivec`-th eigenvector. `ivec` starts at 1 (Julia 1-based indexing)
 """
 function get_eigenvector(eps::SlepcEPS, ivec)
-    A, B = EPSGetOperators(eps)
+    A, _ = EPSGetOperators(eps)
     vecr, veci = MatCreateVecs(A)
     EPSGetEigenvector(eps, ivec - 1, vecr, veci)
     return vecr, veci
@@ -158,7 +158,7 @@ Concatenate specified eigenvectors in two files : real and imag parts.
 This function is experimental : it may allocate a lot of memory. Use it at your own risk.
 """
 function eigenvectors2file(eps::SlepcEPS, vectors_path::String="eigenvectors", ivecs=1:neigs(eps); type="ascii", format=PETSC_VIEWER_ASCII_CSV)
-    mat_r, mat_i = eigenvectors2mat(eps, ivecs)
+    mat_r, mat_i = eigvecs_to_arrays(eps, ivecs)
 
     # Write matrices to file
     mat2file(mat_r, vectors_path * "_r.dat")
@@ -169,11 +169,16 @@ function eigenvectors2file(eps::SlepcEPS, vectors_path::String="eigenvectors", i
 end
 
 """
-    eigenvectors2mat(eps::SlepcEPS, ivecs)
+    eigvecs_to_matrix(::Type{Mat}, eps::SlepcEPS, ivecs=1:neigs(eps), nrows_l = 0)
+    eigvecs_to_matrix(::Type{Matrix{T}}, eps::SlepcEPS, ivecs=1:neigs(eps), nrows_l = 0) where T
 
 Concatenate specified eigenvectors in two matrices : real and imag parts.
+
+# Implementation
+For some unknown reason, the code is crashing when trying to allocate vectors from A, B when
+type of A, B is "Shell". To avoid this crash, the user can provide the number of local rows.
 """
-function eigenvectors2mat(eps::SlepcEPS, ivecs=1:neigs(eps))
+function eigvecs_to_arrays(::Type{Mat}, eps::SlepcEPS, ivecs=1:neigs(eps), nrows_l=0)
     # Get local size
     A, B = EPSGetOperators(eps)
     irows = get_urange(A)
@@ -186,9 +191,8 @@ function eigenvectors2mat(eps::SlepcEPS, ivecs=1:neigs(eps))
     set_up!.((mat_r, mat_i))
 
     # Allocate vectors
-    vecr = create_vector(PETSC_DECIDE, nrows_l; comm=eps.comm)
-    veci = create_vector(PETSC_DECIDE, nrows_l; comm=eps.comm)
-    set_up!.((vecr, veci))
+    vecr = create_vector(comm=eps.comm; nrows_loc=_nrows_l, nrows_glo=PETSC_DECIDE, autosetup=true)
+    veci = create_vector(comm=eps.comm; nrows_loc=_nrows_l, nrows_glo=PETSC_DECIDE, autosetup=true)
 
     # Fill these matrices
     for (icol, ivec) in enumerate(ivecs)
@@ -229,6 +233,46 @@ function eigenvectors2mat(eps::SlepcEPS, ivecs=1:neigs(eps))
     # Assemble matrices
     assemble!(mat_r, MAT_FINAL_ASSEMBLY)
     assemble!(mat_i, MAT_FINAL_ASSEMBLY)
+
+    return mat_r, mat_i
+end
+
+function eigvecs_to_arrays(::Type{Matrix{T}}, eps::SlepcEPS, ivecs=1:neigs(eps), nrows_l=0) where {T}
+    # Get local size
+    if nrows_l > 0
+        _nrows_l = PetscInt(nrows_l)
+    else
+        A, _ = EPSGetOperators(eps)
+        nrows_l, ncols_l = getLocalSize(A)
+        @assert nrows_l == ncols_l "Non square matrix not supported"
+    end
+
+    # Create dense matrices (ndofs x neigs)
+    mat_r = zeros(T, _nrows_l, length(ivecs))
+    mat_i = similar(mat_r)
+
+    # Allocate vectors
+    vecr = create_vector(eps.comm; nrows_loc=_nrows_l, nrows_glo=PETSC_DECIDE, autosetup=true)
+    veci = create_vector(eps.comm; nrows_loc=_nrows_l, nrows_glo=PETSC_DECIDE, autosetup=true)
+
+    # Fill these matrices
+    for (icol, ivec) in enumerate(ivecs)
+        # Retrieve eigenvector (real and imag)
+        EPSGetEigenvector(eps, ivec - 1, vecr, veci)
+
+        # Real part
+        array, array_ref = getArray(vecr)
+        mat_r[:, icol] .= array
+        restoreArray(vecr, array_ref)
+
+        # Imag part
+        array, array_ref = getArray(veci)
+        mat_i[:, icol] .= array
+        restoreArray(veci, array_ref)
+    end
+
+    # Free vectors
+    destroy!.((vecr, veci))
 
     return mat_r, mat_i
 end
